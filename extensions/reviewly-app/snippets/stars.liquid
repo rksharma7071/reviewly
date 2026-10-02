@@ -1,0 +1,17 @@
+{%- assign rating = rating | default: 0 -%}
+<div class="rw-stars" role="img" aria-label="{{ rating }} out of 5 stars">
+  {%- for i in (1..5) -%}
+    {%- assign diff = rating | minus: i -%}
+    {%- if diff >= 0 -%}
+      <span class="rw-star rw-star--full" aria-hidden="true">★</span>
+    {%- elsif diff > -1 -%}
+      {%- assign pct = 1 | plus: diff | times: 100 | round -%}
+      <span class="rw-star rw-star--half" aria-hidden="true">
+        <span class="rw-star__bg">★</span>
+        <span class="rw-star__fg" style="width: {{ pct }}%">★</span>
+      </span>
+    {%- else -%}
+      <span class="rw-star rw-star--empty" aria-hidden="true">★</span>
+    {%- endif -%}
+  {%- endfor -%}
+</div>

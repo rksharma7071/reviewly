@@ -1,0 +1,216 @@
+{%- liquid
+  assign shop_metafields = shop.metafields.reviews_app
+
+  assign star_color = block.settings.star_color | default: shop_metafields.star_color.value | default: '#FFC107'
+  assign star_empty_color = block.settings.star_empty_color | default: shop_metafields.star_empty_color.value | default: '#E0E0E0'
+  assign text_color = block.settings.text_color | default: shop_metafields.text_color.value | default: '#1A1A1A'
+  assign accent_color = block.settings.accent_color | default: shop_metafields.accent_color.value | default: '#111111'
+  assign badge_bg = block.settings.badge_bg | default: shop_metafields.badge_bg.value | default: '#F4F4F4'
+  assign badge_text = block.settings.badge_text | default: shop_metafields.badge_text.value | default: '#333333'
+  assign font_family = block.settings.font_family | default: shop_metafields.font_family.value | default: 'inherit'
+  assign layout = block.settings.layout | default: 'list'
+  assign per_page = block.settings.per_page | default: 5
+  assign show_summary = block.settings.show_summary
+-%}
+
+<div
+  id="reviews-widget-{{ block.id }}"
+  class="reviews-widget reviews-widget--{{ layout }}"
+  data-shop="{{ shop.permanent_domain }}"
+  data-product-id="{{ product.id }}"
+  data-product-handle="{{ product.handle }}"
+  data-show-verified="{{ block.settings.show_verified_badge }}"
+  data-app-url="/apps/reviewly"
+  data-per-page="{{ per_page }}"
+  data-layout="{{ layout }}"
+  style="
+    display: none;
+    --rw-star-color: {{ star_color }};
+    --rw-star-empty: {{ star_empty_color }};
+    --rw-text-color: {{ text_color }};
+    --rw-accent-color: {{ accent_color }};
+    --rw-badge-bg: {{ badge_bg }};
+    --rw-badge-text: {{ badge_text }};
+    --rw-font-family: {{ font_family }};
+    --rw-radius: {{ block.settings.corner_radius | default: 8 }}px;
+    --rw-gap: {{ block.settings.spacing | default: 16 }}px;
+  "
+  {{ block.shopify_attributes }}
+>
+  {%- if show_summary -%}
+    <div class="rw-summary" data-rw-summary>
+      <div class="rw-summary__score">
+        <span class="rw-summary__average" data-rw-average>0.0</span>
+        <div class="rw-summary__stars" data-rw-summary-stars>
+          {% render 'stars', rating: 0 %}
+        </div>
+        <span class="rw-summary__count" data-rw-count>(0 reviews)</span>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="rw-toolbar">
+    <select class="rw-sort" data-rw-sort>
+      <option value="recent">Most recent</option>
+      <option value="highest">Highest rated</option>
+      <option value="lowest">Lowest rated</option>
+      <option value="helpful">Most helpful</option>
+    </select>
+  </div>
+
+  <div class="rw-list" data-rw-list>
+    <div class="rw-loading">Loading reviews…</div>
+  </div>
+
+  <div class="rw-pagination" data-rw-pagination></div>
+
+  {%- if block.settings.show_write_button -%}
+    <button
+      type="button"
+      class="rw-write-btn"
+      data-rw-write
+      data-product-id="{{ product.id }}"
+    >
+      {{ block.settings.write_button_label | default: 'Write a review' }}
+    </button>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Product Reviews",
+  "target": "section",
+  "enabled_on": { "templates": ["product"] },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "list", "label": "List" },
+        { "value": "grid", "label": "Grid" },
+        { "value": "compact", "label": "Compact" }
+      ],
+      "default": "list"
+    },
+    {
+      "type": "range",
+      "id": "per_page",
+      "label": "Reviews per page",
+      "min": 3,
+      "max": 20,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 8,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "spacing",
+      "label": "Spacing",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "header",
+      "content": "Colors"
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Star color",
+      "default": "#FFC107"
+    },
+    {
+      "type": "color",
+      "id": "star_empty_color",
+      "label": "Empty star color",
+      "default": "#E0E0E0"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#1A1A1A"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color (buttons)",
+      "default": "#111111"
+    },
+    {
+      "type": "color",
+      "id": "badge_bg",
+      "label": "Badge background",
+      "default": "#F4F4F4"
+    },
+    {
+      "type": "color",
+      "id": "badge_text",
+      "label": "Badge text",
+      "default": "#333333"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "select",
+      "id": "font_family",
+      "label": "Font family",
+      "options": [
+        { "value": "inherit", "label": "Theme default" },
+        { "value": "'Inter', sans-serif", "label": "Inter" },
+        { "value": "'Poppins', sans-serif", "label": "Poppins" },
+        { "value": "'Roboto', sans-serif", "label": "Roboto" },
+        { "value": "Georgia, serif", "label": "Georgia" }
+      ],
+      "default": "inherit"
+    },
+    {
+      "type": "header",
+      "content": "Features"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_summary",
+      "label": "Show rating summary",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_verified_badge",
+      "label": "Show verified purchase badge",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_write_button",
+      "label": "Show 'Write a review' button",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "write_button_label",
+      "label": "Write button label",
+      "default": "Write a review"
+    }
+  ]
+}
+{% endschema %}

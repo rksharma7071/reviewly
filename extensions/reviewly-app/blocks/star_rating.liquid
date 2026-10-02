@@ -1,0 +1,71 @@
+{%- comment -%}
+  extensions/reviews-widget/blocks/star_rating.liquid
+  Compact inline star rating badge (no full review list).
+{%- endcomment -%}
+
+{%- liquid
+  assign shop_metafields = shop.metafields.reviews_app
+  assign star_color = block.settings.star_color | default: shop_metafields.star_color.value | default: '#FFC107'
+  assign star_empty_color = block.settings.star_empty_color | default: shop_metafields.star_empty_color.value | default: '#E0E0E0'
+  assign text_color = block.settings.text_color | default: shop_metafields.text_color.value | default: '#1A1A1A'
+-%}
+
+<div
+  class="rw-inline-rating"
+  data-shop="{{ shop.permanent_domain }}"
+  data-product-id="{{ product.id }}"
+  data-app-url="/apps/reviewly"
+  style="
+    display: none;
+    --rw-star-color: {{ star_color }};
+    --rw-star-empty: {{ star_empty_color }};
+    --rw-text-color: {{ text_color }};
+    --rw-font-family: {{ block.settings.font_family | default: 'inherit' }};
+  "
+  {{ block.shopify_attributes }}
+>
+  <div class="rw-inline-rating__stars" data-rw-inline-stars>
+    {% render 'stars', rating: 0 %}
+  </div>
+  <a class="rw-inline-rating__link" href="#reviews-widget-{{ block.id }}" data-rw-inline-count> (0 reviews) </a>
+</div>
+
+{% schema %}
+{
+  "name": "Star Rating Badge",
+  "target": "section",
+  "enabled_on": { "templates": ["product"] },
+  "settings": [
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Star color",
+      "default": "#FFC107"
+    },
+    {
+      "type": "color",
+      "id": "star_empty_color",
+      "label": "Empty star color",
+      "default": "#E0E0E0"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#1A1A1A"
+    },
+    {
+      "type": "select",
+      "id": "font_family",
+      "label": "Font family",
+      "options": [
+        { "value": "inherit", "label": "Theme default" },
+        { "value": "'Inter', sans-serif", "label": "Inter" },
+        { "value": "'Poppins', sans-serif", "label": "Poppins" },
+        { "value": "Georgia, serif", "label": "Georgia" }
+      ],
+      "default": "inherit"
+    }
+  ]
+}
+{% endschema %}

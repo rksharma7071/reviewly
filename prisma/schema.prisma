@@ -1,0 +1,144 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+model Session {
+  session_id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  id                  String    @unique
+  shop                String
+  state               String
+  isOnline            Boolean   @default(false)
+  scope               String?
+  expires             DateTime?
+  accessToken         String
+  userId              BigInt?
+  firstName           String?
+  lastName            String?
+  email               String?
+  accountOwner        Boolean   @default(false)
+  locale              String?
+  collaborator        Boolean?  @default(false)
+  emailVerified       Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+
+  @@index([shop])
+  @@map("Session")
+}
+
+model Shop {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  domain        String    @unique
+  name          String?
+  email         String?
+  currency      String?
+  timezone      String?
+  plan          String    @default("FREE")
+  isActive      Boolean   @default(true)
+  installedAt   DateTime  @default(now())
+  uninstalledAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  products Product[]
+  reviews  Review[]
+  settings Setting[]
+
+  @@index([isActive, createdAt])
+  @@map("Shop")
+}
+
+model Product {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  shop        String
+  productId   String
+  title       String
+  handle      String?
+  description String?
+  vendor      String?
+  productType String?
+  imageUrl    String?
+  status      String  @default("ACTIVE")
+
+  averageRating        Float @default(0)
+  reviewCount          Int   @default(0)
+  publishedReviewCount Int   @default(0)
+
+  syncedAt  DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  shopData Shop     @relation(fields: [shop], references: [domain], onDelete: Cascade)
+  reviews  Review[]
+
+  @@unique([shop, productId])
+  @@index([shop, status])
+  @@index([shop, handle])
+  @@index([shop, updatedAt])
+  @@index([shop, averageRating])
+  @@map("Product")
+}
+
+model Review {
+  id           String @id @default(auto()) @map("_id") @db.ObjectId
+  shop         String
+  productRefId String @db.ObjectId
+  productId    String
+
+  authorName  String
+  authorEmail String?
+  title       String?
+  body        String
+  rating      Int
+
+  status           String  @default("PENDING")
+  verifiedPurchase Boolean @default(false)
+
+  media Json?
+
+  merchantReply String?
+  repliedAt     DateTime?
+  publishedAt   DateTime?
+
+  source     String  @default("STORE")
+  customerId String?
+  orderId    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shopData Shop    @relation(fields: [shop], references: [domain], onDelete: Cascade)
+  product  Product @relation(fields: [productRefId], references: [id], onDelete: Cascade)
+
+  @@index([shop, productId, status, publishedAt(sort: Desc)])
+  @@index([shop, status, createdAt(sort: Desc)])
+  @@index([shop, createdAt(sort: Desc)])
+  @@index([shop, rating])
+  @@index([shop, authorEmail])
+  @@index([shop, customerId])
+  @@index([productRefId, status])
+  @@map("Review")
+}
+
+model Setting {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  shop        String
+  key         String
+  value       Json
+  category    String   @default("GENERAL")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  shopData Shop @relation(fields: [shop], references: [domain], onDelete: Cascade)
+
+  @@unique([shop, key])
+  @@index([shop, category])
+  @@index([shop, updatedAt])
+  @@map("Setting")
+}

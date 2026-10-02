@@ -1,0 +1,14 @@
+<script>
+  window.ReviewlyAppEnabled = true;
+</script>
+
+<script src="{{ 'reviews-widget.js' | asset_url }}" defer></script>
+{{ 'reviews-widget.css' | asset_url | stylesheet_tag }}
+
+{% schema %}
+{
+  "name": "Reviewly",
+  "target": "body",
+  "settings": []
+}
+{% endschema %}
