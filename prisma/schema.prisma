@@ -142,3 +142,18 @@ model Setting {
   @@index([shop, updatedAt])
   @@map("Setting")
 }
+
+model WidgetConfig {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  shop      String @unique
+  version   Int    @default(1)
+  global    Json   @default("{}")
+  widgets   Json   @default("{}")
+  enabled   Json   @default("{}")
+  customCss String @default("")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("WidgetConfig")
+}

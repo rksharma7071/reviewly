@@ -1,0 +1,287 @@
+{%- liquid
+  assign shop_metafields = shop.metafields.reviews_app
+
+  assign star_color = block.settings.star_color | default: shop_metafields.star_color.value | default: '#FFC107'
+  assign star_empty_color = block.settings.star_empty_color | default: shop_metafields.star_empty_color.value | default: '#E0E0E0'
+  assign text_color = block.settings.text_color | default: shop_metafields.text_color.value | default: '#1A1A1A'
+  assign accent_color = block.settings.accent_color | default: shop_metafields.accent_color.value | default: '#111111'
+  assign bg_color = block.settings.bg_color | default: 'transparent'
+  assign font_family = block.settings.font_family | default: 'inherit'
+
+  assign heading = block.settings.heading
+  assign description = block.settings.description
+  assign columns_desktop = block.settings.columns_desktop | default: 3
+  assign columns_mobile = block.settings.columns_mobile | default: 2
+  assign card_limit = block.settings.card_limit | default: 9
+  assign aspect_ratio = block.settings.aspect_ratio | default: '1 / 1'
+  assign card_gap = block.settings.card_gap | default: 16
+
+  assign show_name = block.settings.show_name
+  assign show_stars = block.settings.show_stars
+  assign show_text = block.settings.show_text
+  assign show_product = block.settings.show_product
+  assign show_date = block.settings.show_date
+  assign show_verified = block.settings.show_verified
+  assign show_view_all = block.settings.show_view_all
+  assign view_all_label = block.settings.view_all_label | default: 'View all reviews'
+-%}
+
+<div
+  id="reviewly-photo-reviews-{{ block.id }}"
+  class="reviewly-photo-reviews"
+  data-shop="{{ shop.permanent_domain }}"
+  data-product-id="{{ product.id }}"
+  data-product-handle="{{ product.handle }}"
+  data-app-url="/apps/reviewly"
+  data-limit="{{ card_limit }}"
+  data-columns-desktop="{{ columns_desktop }}"
+  data-columns-mobile="{{ columns_mobile }}"
+  data-aspect-ratio="{{ aspect_ratio }}"
+  data-show-name="{{ show_name }}"
+  data-show-stars="{{ show_stars }}"
+  data-show-text="{{ show_text }}"
+  data-show-product="{{ show_product }}"
+  data-show-date="{{ show_date }}"
+  data-show-verified="{{ show_verified }}"
+  style="
+    --rpr-star-color: {{ star_color }};
+    --rpr-star-empty: {{ star_empty_color }};
+    --rpr-text-color: {{ text_color }};
+    --rpr-accent-color: {{ accent_color }};
+    --rpr-bg-color: {{ bg_color }};
+    --rpr-font-family: {{ font_family }};
+    --rpr-card-gap: {{ card_gap }}px;
+    --rpr-columns-desktop: {{ columns_desktop }};
+    --rpr-columns-mobile: {{ columns_mobile }};
+    --rpr-aspect-ratio: {{ aspect_ratio }};
+    --rpr-radius: {{ block.settings.corner_radius | default: 12 }}px;
+  "
+  {{ block.shopify_attributes }}
+>
+  {%- if heading != blank or description != blank -%}
+    <header class="reviewly-photo-reviews__header">
+      {%- if heading != blank -%}
+        <h2 class="reviewly-photo-reviews__heading">{{ heading }}</h2>
+      {%- endif -%}
+      {%- if description != blank -%}
+        <p class="reviewly-photo-reviews__description">{{ description }}</p>
+      {%- endif -%}
+    </header>
+  {%- endif -%}
+
+  <div class="reviewly-photo-reviews__grid" data-rpr-grid aria-live="polite">
+    <div class="reviewly-photo-reviews__status">Loading customer photos…</div>
+  </div>
+
+  {%- if show_view_all -%}
+    <div class="reviewly-photo-reviews__footer">
+      <a
+        class="reviewly-photo-reviews__view-all"
+        href="#reviews-widget-{{ block.id }}"
+        data-rpr-view-all
+      >
+        {{ view_all_label }}
+      </a>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} Lightbox — hidden until opened {%- endcomment -%}
+  <div
+    class="reviewly-photo-reviews__lightbox"
+    data-rpr-lightbox
+    role="dialog"
+    aria-modal="true"
+    aria-hidden="true"
+    hidden
+  >
+    <div class="reviewly-photo-reviews__lightbox-backdrop" data-rpr-lightbox-close></div>
+    <div class="reviewly-photo-reviews__lightbox-body" role="document">
+      <button
+        type="button"
+        class="reviewly-photo-reviews__lightbox-close"
+        data-rpr-lightbox-close
+        aria-label="Close media viewer"
+      >
+        ×
+      </button>
+      <button
+        type="button"
+        class="reviewly-photo-reviews__lightbox-nav reviewly-photo-reviews__lightbox-nav--prev"
+        data-rpr-lightbox-prev
+        aria-label="Previous media"
+      >
+        ‹
+      </button>
+      <div class="reviewly-photo-reviews__lightbox-stage" data-rpr-lightbox-stage></div>
+      <button
+        type="button"
+        class="reviewly-photo-reviews__lightbox-nav reviewly-photo-reviews__lightbox-nav--next"
+        data-rpr-lightbox-next
+        aria-label="Next media"
+      >
+        ›
+      </button>
+    </div>
+  </div>
+</div>
+
+<style data-reviewly-config>
+  .reviewly-scope-photo_reviews {
+    --rpr-scope-ready: 1;
+  }
+</style>
+
+<script>
+  (function () {
+    var root = document.getElementById('reviewly-photo-reviews-{{ block.id }}');
+    if (!root) return;
+    root.classList.add('reviewly-scope-photo_reviews');
+
+    var shop = root.dataset.shop;
+    var url = '/apps/reviewly/api/widget-config?shop=' + encodeURIComponent(shop) + '&widget=photo_reviews';
+
+    fetch(url, { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        if (!cfg) return;
+        if (!cfg.enabled) {
+          root.style.display = 'none';
+          return;
+        }
+
+        var s = cfg.settings || {};
+        if (s.starColor) root.style.setProperty('--rpr-star-color', s.starColor);
+        if (s.starEmptyColor) root.style.setProperty('--rpr-star-empty', s.starEmptyColor);
+        if (s.textColor) root.style.setProperty('--rpr-text-color', s.textColor);
+        if (s.accentColor) root.style.setProperty('--rpr-accent-color', s.accentColor);
+        if (s.bgColor) root.style.setProperty('--rpr-bg-color', s.bgColor);
+        if (s.fontFamily) root.style.setProperty('--rpr-font-family', s.fontFamily);
+        if (s.cardGap) root.style.setProperty('--rpr-card-gap', s.cardGap + 'px');
+        if (s.columnsDesktop) root.style.setProperty('--rpr-columns-desktop', s.columnsDesktop);
+        if (s.columnsMobile) root.style.setProperty('--rpr-columns-mobile', s.columnsMobile);
+        if (s.aspectRatio) root.style.setProperty('--rpr-aspect-ratio', s.aspectRatio);
+        if (s.cardRadius) root.style.setProperty('--rpr-radius', s.cardRadius + 'px');
+
+        if (cfg.css) {
+          var style = document.createElement('style');
+          style.setAttribute('data-reviewly-custom', '');
+          style.textContent = cfg.css;
+          document.head.appendChild(style);
+        }
+      })
+      .catch(function (err) { console.warn('[reviewly] config load failed', err); });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Photo Reviews",
+  "target": "section",
+  "enabled_on": { "templates": ["product", "index", "collection"] },
+  "stylesheet": "photo-reviews.css",
+  "javascript": "photo-reviews.js",
+  "settings": [
+    { "type": "header", "content": "Content" },
+    { "type": "text", "id": "heading", "label": "Section heading", "default": "Customer Photos" },
+    {
+      "type": "textarea",
+      "id": "description",
+      "label": "Description",
+      "default": "Real photos and videos from verified customers."
+    },
+    {
+      "type": "range",
+      "id": "card_limit",
+      "label": "Reviews to display",
+      "min": 3,
+      "max": 24,
+      "step": 1,
+      "default": 9
+    },
+
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "aspect_ratio",
+      "label": "Media aspect ratio",
+      "options": [
+        { "value": "1 / 1", "label": "Square (1:1)" },
+        { "value": "4 / 5", "label": "Portrait (4:5)" },
+        { "value": "3 / 4", "label": "Portrait (3:4)" },
+        { "value": "16 / 9", "label": "Landscape (16:9)" }
+      ],
+      "default": "1 / 1"
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Card spacing",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 12,
+      "unit": "px"
+    },
+
+    { "type": "header", "content": "Review fields" },
+    { "type": "checkbox", "id": "show_name", "label": "Show customer name", "default": true },
+    { "type": "checkbox", "id": "show_stars", "label": "Show star rating", "default": true },
+    { "type": "checkbox", "id": "show_text", "label": "Show review text", "default": true },
+    { "type": "checkbox", "id": "show_product", "label": "Show product info", "default": true },
+    { "type": "checkbox", "id": "show_date", "label": "Show review date", "default": true },
+    { "type": "checkbox", "id": "show_verified", "label": "Show verified purchase badge", "default": true },
+    { "type": "checkbox", "id": "show_view_all", "label": "Show 'View all reviews' link", "default": false },
+    { "type": "text", "id": "view_all_label", "label": "'View all' label", "default": "View all reviews" },
+
+    { "type": "header", "content": "Colors" },
+    { "type": "color", "id": "star_color", "label": "Star color", "default": "#FFC107" },
+    { "type": "color", "id": "star_empty_color", "label": "Empty star color", "default": "#E0E0E0" },
+    { "type": "color", "id": "text_color", "label": "Text color", "default": "#1A1A1A" },
+    { "type": "color", "id": "accent_color", "label": "Accent color", "default": "#111111" },
+    { "type": "color", "id": "bg_color", "label": "Section background", "default": "#FFFFFF" },
+
+    { "type": "header", "content": "Typography" },
+    {
+      "type": "select",
+      "id": "font_family",
+      "label": "Font family",
+      "options": [
+        { "value": "inherit", "label": "Theme default" },
+        { "value": "'Inter', sans-serif", "label": "Inter" },
+        { "value": "'Poppins', sans-serif", "label": "Poppins" },
+        { "value": "Georgia, serif", "label": "Georgia" }
+      ],
+      "default": "inherit"
+    }
+  ]
+}
+{% endschema %}

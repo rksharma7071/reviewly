@@ -1,4 +1,5 @@
-import { useLoaderData, useSubmit, useNavigation, useNavigate } from "react-router";
+import { useLoaderData, useSubmit, useNavigation, useNavigate, useSearchParams } from "react-router";
+import { useState, useCallback, useEffect } from "react";
 import {
   Page,
   Layout,
@@ -10,6 +11,10 @@ import {
   ButtonGroup,
   BlockStack,
   EmptySearchResult,
+  TextField,
+  Select,
+  InlineStack,
+  Box,
 } from "@shopify/polaris";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
@@ -19,8 +24,25 @@ export const loader = async ({ request }) => {
   const { session, admin } = await authenticate.admin(request);
   const shop = session.shop;
 
+  const url = new URL(request.url);
+  const statusFilter = url.searchParams.get("status") || "all";
+  const searchStr = url.searchParams.get("search") || "";
+
+  const where = { shop };
+  if (statusFilter !== "all") {
+    where.status = statusFilter.toUpperCase();
+  }
+  if (searchStr) {
+    where.OR = [
+      { authorName: { contains: searchStr, mode: "insensitive" } },
+      { authorEmail: { contains: searchStr, mode: "insensitive" } },
+      { title: { contains: searchStr, mode: "insensitive" } },
+      { body: { contains: searchStr, mode: "insensitive" } },
+    ];
+  }
+
   const reviews = await db.review.findMany({
-    where: { shop },
+    where,
     orderBy: { createdAt: "desc" },
     include: { product: true },
     take: 100,
@@ -94,6 +116,11 @@ export const action = async ({ request }) => {
       where: { id: String(id), shop },
       data: { status: "PUBLISHED", publishedAt: new Date() },
     });
+  } else if (actionType === "unpublish") {
+    await db.review.update({
+      where: { id: String(id), shop },
+      data: { status: "UNPUBLISHED" },
+    });
   } else if (actionType === "reject") {
     await db.review.update({
       where: { id: String(id), shop },
@@ -113,7 +140,46 @@ export default function ReviewsPage() {
   const submit = useSubmit();
   const navigation = useNavigation();
   const navigate = useNavigate();
-  const isSubmitting = navigation.state === "submitting";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const isSubmitting = navigation.state === "submitting" || navigation.state === "loading";
+
+  const currentStatus = searchParams.get("status") || "all";
+  const currentSearch = searchParams.get("search") || "";
+
+  const [queryValue, setQueryValue] = useState(currentSearch);
+  const [statusValue, setStatusValue] = useState(currentStatus);
+
+  const handleStatusChange = useCallback(
+    (value) => {
+      setStatusValue(value);
+      const newParams = new URLSearchParams(searchParams);
+      if (value === "all") newParams.delete("status");
+      else newParams.set("status", value);
+      setSearchParams(newParams);
+    },
+    [searchParams, setSearchParams]
+  );
+
+  const handleFiltersQueryChange = useCallback(
+    (value) => {
+      setQueryValue(value);
+    },
+    []
+  );
+
+  const handleQuerySubmit = useCallback(() => {
+    const newParams = new URLSearchParams(searchParams);
+    if (queryValue) newParams.set("search", queryValue);
+    else newParams.delete("search");
+    setSearchParams(newParams);
+  }, [queryValue, searchParams, setSearchParams]);
+
+  const handleQueryClear = useCallback(() => {
+    setQueryValue("");
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete("search");
+    setSearchParams(newParams);
+  }, [searchParams, setSearchParams]);
 
   const handleAction = (id, action) => {
     submit({ id, action }, { method: "POST" });
@@ -124,6 +190,8 @@ export default function ReviewsPage() {
       case "PUBLISHED":
       case "FEATURED":
         return <Badge tone="success">Published</Badge>;
+      case "UNPUBLISHED":
+        return <Badge tone="info">Unpublished</Badge>;
       case "PENDING":
         return <Badge tone="warning">Pending</Badge>;
       case "REJECTED":
@@ -170,42 +238,30 @@ export default function ReviewsPage() {
         <IndexTable.Cell>
           <ButtonGroup>
             {status === "PENDING" && (
-              <>
-                <Button
-                  size="micro"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAction(id, "approve");
-                  }}
-                  disabled={isSubmitting}
-                >
-                  Approve
-                </Button>
-                <Button
-                  size="micro"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAction(id, "reject");
-                  }}
-                  disabled={isSubmitting}
-                >
-                  Reject
-                </Button>
-              </>
+              <Button
+                size="micro"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAction(id, "approve");
+                }}
+                disabled={isSubmitting}
+              >
+                Approve
+              </Button>
             )}
             {status === "PUBLISHED" && (
               <Button
                 size="micro"
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleAction(id, "reject");
+                  handleAction(id, "unpublish");
                 }}
                 disabled={isSubmitting}
               >
-                Hide
+                Unpublish
               </Button>
             )}
-            {status === "REJECTED" && (
+            {(status === "REJECTED" || status === "UNPUBLISHED") && (
               <Button
                 size="micro"
                 onClick={(e) => {
@@ -215,6 +271,18 @@ export default function ReviewsPage() {
                 disabled={isSubmitting}
               >
                 Publish
+              </Button>
+            )}
+            {status !== "REJECTED" && (
+              <Button
+                size="micro"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleAction(id, "reject");
+                }}
+                disabled={isSubmitting}
+              >
+                Reject
               </Button>
             )}
             <Button
@@ -241,6 +309,38 @@ export default function ReviewsPage() {
       <Layout>
         <Layout.Section>
           <Card padding="0">
+            <Box padding="400">
+              <InlineStack gap="400" align="start" blockAlign="center">
+                <Box minWidth="300px">
+                  <TextField
+                    label="Search reviews"
+                    labelHidden
+                    value={queryValue}
+                    onChange={handleFiltersQueryChange}
+                    onClearButtonClick={handleQueryClear}
+                    clearButton
+                    placeholder="Search author, title, body..."
+                    autoComplete="off"
+                    connectedRight={
+                      <Button onClick={handleQuerySubmit}>Search</Button>
+                    }
+                  />
+                </Box>
+                <Select
+                  label="Status"
+                  labelInline
+                  options={[
+                    { label: "All", value: "all" },
+                    { label: "Pending", value: "pending" },
+                    { label: "Published", value: "published" },
+                    { label: "Unpublished", value: "unpublished" },
+                    { label: "Rejected", value: "rejected" },
+                  ]}
+                  value={statusValue}
+                  onChange={handleStatusChange}
+                />
+              </InlineStack>
+            </Box>
             <IndexTable
               resourceName={{ singular: "review", plural: "reviews" }}
               itemCount={reviews.length}

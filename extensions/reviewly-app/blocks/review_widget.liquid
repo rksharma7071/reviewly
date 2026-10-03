@@ -67,7 +67,7 @@
   {%- if block.settings.show_write_button -%}
     <button
       type="button"
-      class="rw-write-btn"
+      class="button button--primary"
       data-rw-write
       data-product-id="{{ product.id }}"
     >
@@ -75,6 +75,57 @@
     </button>
   {%- endif -%}
 </div>
+
+<style data-reviewly-config>
+  .reviewly-scope-reviews {
+    --rw-scope-ready: 1;
+  }
+</style>
+
+<script>
+  (function () {
+    var root = document.getElementById('reviews-widget-{{ block.id }}');
+    if (!root) return;
+    root.classList.add('reviewly-scope-reviews');
+
+    var shop = root.dataset.shop;
+    var url = '/apps/reviewly/api/widget-config?shop=' + encodeURIComponent(shop) + '&widget=reviews';
+
+    fetch(url, { headers: { Accept: 'application/json' } })
+      .then(function (r) {
+        return r.ok ? r.json() : null;
+      })
+      .then(function (cfg) {
+        if (!cfg) return;
+        if (!cfg.enabled) {
+          root.style.display = 'none';
+          return;
+        }
+        root.style.display = '';
+
+        // Apply settings as CSS custom properties
+        var s = cfg.settings || {};
+        if (s.starColor) root.style.setProperty('--rw-star-color', s.starColor);
+        if (s.starEmptyColor) root.style.setProperty('--rw-star-empty', s.starEmptyColor);
+        if (s.textColor) root.style.setProperty('--rw-text-color', s.textColor);
+        if (s.accentColor) root.style.setProperty('--rw-accent-color', s.accentColor);
+        if (s.fontFamily) root.style.setProperty('--rw-font-family', s.fontFamily);
+        if (s.cardRadius) root.style.setProperty('--rw-radius', s.cardRadius + 'px');
+        if (s.cardSpacing) root.style.setProperty('--rw-gap', s.cardSpacing + 'px');
+
+        // Inject merchant CSS (already prefixed server-side)
+        if (cfg.css) {
+          var style = document.createElement('style');
+          style.setAttribute('data-reviewly-custom', '');
+          style.textContent = cfg.css;
+          document.head.appendChild(style);
+        }
+      })
+      .catch(function (err) {
+        console.warn('[reviewly] config load failed', err);
+      });
+  })();
+</script>
 
 {% schema %}
 {

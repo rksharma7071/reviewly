@@ -47,6 +47,11 @@ export const action = async ({ request, params }) => {
       where: { id: String(id), shop },
       data: { status: "PUBLISHED", publishedAt: new Date() },
     });
+  } else if (actionType === "unpublish") {
+    await db.review.update({
+      where: { id: String(id), shop },
+      data: { status: "UNPUBLISHED" },
+    });
   } else if (actionType === "reject") {
     await db.review.update({
       where: { id: String(id), shop },
@@ -93,6 +98,8 @@ export default function ReviewDetailsPage() {
       case "PUBLISHED":
       case "FEATURED":
         return <Badge tone="success">Published</Badge>;
+      case "UNPUBLISHED":
+        return <Badge tone="info">Unpublished</Badge>;
       case "PENDING":
         return <Badge tone="warning">Pending</Badge>;
       case "REJECTED":
@@ -113,19 +120,24 @@ export default function ReviewDetailsPage() {
               onAction: () => handleAction("approve"),
               loading: isSubmitting,
             }
-          : review.status === "REJECTED"
+          : (review.status === "REJECTED" || review.status === "UNPUBLISHED")
           ? {
               content: "Publish",
               onAction: () => handleAction("approve"),
               loading: isSubmitting,
             }
           : {
-              content: "Hide",
-              onAction: () => handleAction("reject"),
+              content: "Unpublish",
+              onAction: () => handleAction("unpublish"),
               loading: isSubmitting,
             }
       }
       secondaryActions={[
+        ...(review.status !== "REJECTED" ? [{
+          content: "Reject",
+          onAction: () => handleAction("reject"),
+          loading: isSubmitting,
+        }] : []),
         {
           content: "Delete",
           destructive: true,

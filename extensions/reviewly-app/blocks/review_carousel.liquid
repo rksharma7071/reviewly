@@ -1,0 +1,311 @@
+{%- comment -%}
+  Reviewly Review Carousel
+  Horizontal, accessible testimonial slider fed by the Reviewly API.
+{%- endcomment -%}
+
+{%- liquid
+  assign shop_metafields = shop.metafields.reviews_app
+
+  assign star_color = block.settings.star_color | default: shop_metafields.star_color.value | default: '#FFC107'
+  assign star_empty_color = block.settings.star_empty_color | default: shop_metafields.star_empty_color.value | default: '#E0E0E0'
+  assign text_color = block.settings.text_color | default: shop_metafields.text_color.value | default: '#1A1A1A'
+  assign accent_color = block.settings.accent_color | default: shop_metafields.accent_color.value | default: '#111111'
+  assign bg_color = block.settings.bg_color | default: 'transparent'
+  assign card_bg = block.settings.card_bg | default: '#FFFFFF'
+  assign card_border = block.settings.card_border | default: '#EAEAEA'
+  assign font_family = block.settings.font_family | default: 'inherit'
+
+  assign heading = block.settings.heading
+  assign description = block.settings.description
+  assign max_reviews = block.settings.max_reviews | default: 12
+  assign per_view_desktop = block.settings.per_view_desktop | default: 3
+  assign per_view_tablet = block.settings.per_view_tablet | default: 2
+  assign per_view_mobile = block.settings.per_view_mobile | default: 1
+  assign card_gap = block.settings.card_gap | default: 16
+
+  assign show_arrows = block.settings.show_arrows
+  assign show_dots = block.settings.show_dots
+  assign autoplay = block.settings.autoplay
+  assign autoplay_ms = block.settings.autoplay_ms | default: 5000
+
+  assign show_name = block.settings.show_name
+  assign show_stars = block.settings.show_stars
+  assign show_date = block.settings.show_date
+  assign show_product = block.settings.show_product
+  assign show_thumb = block.settings.show_thumbnail
+  assign show_verified = block.settings.show_verified
+
+  assign show_read_all = block.settings.show_read_all
+  assign read_all_label = block.settings.read_all_label | default: 'Read all reviews'
+  assign read_all_url = block.settings.read_all_url
+-%}
+
+<div
+  id="reviewly-review-carousel-{{ block.id }}"
+  class="reviewly-review-carousel"
+  data-shop="{{ shop.permanent_domain }}"
+  data-product-id="{{ product.id }}"
+  data-app-url="/apps/reviewly"
+  data-max="{{ max_reviews }}"
+  data-desktop="{{ per_view_desktop }}"
+  data-tablet="{{ per_view_tablet }}"
+  data-mobile="{{ per_view_mobile }}"
+  data-gap="{{ card_gap }}"
+  data-arrows="{{ show_arrows }}"
+  data-dots="{{ show_dots }}"
+  data-autoplay="{{ autoplay }}"
+  data-autoplay-ms="{{ autoplay_ms }}"
+  data-show-name="{{ show_name }}"
+  data-show-stars="{{ show_stars }}"
+  data-show-date="{{ show_date }}"
+  data-show-product="{{ show_product }}"
+  data-show-thumb="{{ show_thumb }}"
+  data-show-verified="{{ show_verified }}"
+  style="
+    --rrc-star-color: {{ star_color }};
+    --rrc-star-empty: {{ star_empty_color }};
+    --rrc-text-color: {{ text_color }};
+    --rrc-accent-color: {{ accent_color }};
+    --rrc-bg-color: {{ bg_color }};
+    --rrc-card-bg: {{ card_bg }};
+    --rrc-card-border: {{ card_border }};
+    --rrc-font-family: {{ font_family }};
+    --rrc-gap: {{ card_gap }}px;
+    --rrc-radius: {{ block.settings.corner_radius | default: 12 }}px;
+  "
+  {{ block.shopify_attributes }}
+>
+  {%- if heading != blank or description != blank -%}
+    <header class="reviewly-review-carousel__header">
+      {%- if heading != blank -%}
+        <h2 class="reviewly-review-carousel__heading">{{ heading }}</h2>
+      {%- endif -%}
+      {%- if description != blank -%}
+        <p class="reviewly-review-carousel__description">{{ description }}</p>
+      {%- endif -%}
+    </header>
+  {%- endif -%}
+
+  <div
+    class="reviewly-review-carousel__viewport"
+    data-rrc-viewport
+    role="region"
+    aria-roledescription="carousel"
+    aria-label="{{ heading | default: 'Customer reviews' | escape }}"
+    tabindex="0"
+  >
+    <ul
+      class="reviewly-review-carousel__track"
+      data-rrc-track
+      aria-live="polite"
+    >
+      <li class="reviewly-review-carousel__status">Loading reviews…</li>
+    </ul>
+
+    {%- if show_arrows -%}
+      <button
+        type="button"
+        class="reviewly-review-carousel__arrow reviewly-review-carousel__arrow--prev"
+        data-rrc-prev
+        aria-label="Previous reviews"
+        disabled
+      >
+        ‹
+      </button>
+      <button
+        type="button"
+        class="reviewly-review-carousel__arrow reviewly-review-carousel__arrow--next"
+        data-rrc-next
+        aria-label="Next reviews"
+        disabled
+      >
+        ›
+      </button>
+    {%- endif -%}
+  </div>
+
+  {%- if show_dots -%}
+    <div
+      class="reviewly-review-carousel__dots"
+      data-rrc-dots
+      role="tablist"
+      aria-label="Choose a slide"
+    ></div>
+  {%- endif -%}
+
+  {%- if show_read_all and read_all_url != blank -%}
+    <div class="reviewly-review-carousel__footer">
+      <a class="reviewly-review-carousel__read-all" href="{{ read_all_url }}">
+        {{ read_all_label }}
+      </a>
+    </div>
+  {%- endif -%}
+</div>
+
+<style data-reviewly-config>
+  .reviewly-scope-review_carousel {
+    --rrc-scope-ready: 1;
+  }
+</style>
+
+<script>
+  (function () {
+    var root = document.getElementById('reviewly-review-carousel-{{ block.id }}');
+    if (!root) return;
+    root.classList.add('reviewly-scope-review_carousel');
+
+    var shop = root.dataset.shop;
+    var url = '/apps/reviewly/api/widget-config?shop=' + encodeURIComponent(shop) + '&widget=review_carousel';
+
+    fetch(url, { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        if (!cfg) return;
+        if (!cfg.enabled) {
+          root.style.display = 'none';
+          return;
+        }
+
+        var s = cfg.settings || {};
+        if (s.starColor) root.style.setProperty('--rrc-star-color', s.starColor);
+        if (s.starEmptyColor) root.style.setProperty('--rrc-star-empty', s.starEmptyColor);
+        if (s.textColor) root.style.setProperty('--rrc-text-color', s.textColor);
+        if (s.accentColor) root.style.setProperty('--rrc-accent-color', s.accentColor);
+        if (s.bgColor) root.style.setProperty('--rrc-bg-color', s.bgColor);
+        if (s.cardBg) root.style.setProperty('--rrc-card-bg', s.cardBg);
+        if (s.cardBorder) root.style.setProperty('--rrc-card-border', s.cardBorder);
+        if (s.fontFamily) root.style.setProperty('--rrc-font-family', s.fontFamily);
+        if (s.cardGap) root.style.setProperty('--rrc-gap', s.cardGap + 'px');
+        if (s.cardRadius) root.style.setProperty('--rrc-radius', s.cardRadius + 'px');
+        
+        // Settings that affect layout calculations might require a re-render/resize event
+        // The carousel's JS listens for resize, so we can dispatch one if per_view changes
+        var needsResize = false;
+        if (s.perViewDesktop !== undefined) { root.dataset.desktop = s.perViewDesktop; needsResize = true; }
+        if (s.perViewTablet !== undefined) { root.dataset.tablet = s.perViewTablet; needsResize = true; }
+        if (s.perViewMobile !== undefined) { root.dataset.mobile = s.perViewMobile; needsResize = true; }
+        if (needsResize) window.dispatchEvent(new Event('resize'));
+
+        if (cfg.css) {
+          var style = document.createElement('style');
+          style.setAttribute('data-reviewly-custom', '');
+          style.textContent = cfg.css;
+          document.head.appendChild(style);
+        }
+      })
+      .catch(function (err) { console.warn('[reviewly] config load failed', err); });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Review Carousel",
+  "target": "section",
+  "enabled_on": { "templates": ["index", "product", "collection", "page"] },
+  "stylesheet": "review-carousel.css",
+  "javascript": "review-carousel.js",
+  "settings": [
+    { "type": "header", "content": "Content" },
+    { "type": "text", "id": "heading", "label": "Section heading", "default": "What our customers say" },
+    { "type": "textarea", "id": "description", "label": "Subtitle" },
+    { "type": "range", "id": "max_reviews", "label": "Maximum reviews", "min": 3, "max": 24, "step": 1, "default": 12 },
+
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "range",
+      "id": "per_view_desktop",
+      "label": "Cards on desktop",
+      "min": 1,
+      "max": 5,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "per_view_tablet",
+      "label": "Cards on tablet",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "per_view_mobile",
+      "label": "Cards on mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "range",
+      "id": "card_gap",
+      "label": "Card spacing",
+      "min": 4,
+      "max": 40,
+      "step": 2,
+      "default": 16,
+      "unit": "px"
+    },
+    {
+      "type": "range",
+      "id": "corner_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "default": 12,
+      "unit": "px"
+    },
+
+    { "type": "header", "content": "Carousel behavior" },
+    { "type": "checkbox", "id": "show_arrows", "label": "Show navigation arrows", "default": true },
+    { "type": "checkbox", "id": "show_dots", "label": "Show pagination dots", "default": true },
+    { "type": "checkbox", "id": "autoplay", "label": "Autoplay", "default": false },
+    {
+      "type": "range",
+      "id": "autoplay_ms",
+      "label": "Autoplay interval",
+      "min": 3000,
+      "max": 9500,
+      "step": 500,
+      "default": 5000,
+      "unit": "ms"
+    },
+
+    { "type": "header", "content": "Card fields" },
+    { "type": "checkbox", "id": "show_name", "label": "Show customer name", "default": true },
+    { "type": "checkbox", "id": "show_stars", "label": "Show star rating", "default": true },
+    { "type": "checkbox", "id": "show_date", "label": "Show review date", "default": true },
+    { "type": "checkbox", "id": "show_product", "label": "Show product name + link", "default": false },
+    { "type": "checkbox", "id": "show_thumbnail", "label": "Show product thumbnail", "default": false },
+    { "type": "checkbox", "id": "show_verified", "label": "Show verified purchase badge", "default": true },
+
+    { "type": "checkbox", "id": "show_read_all", "label": "Show 'Read all reviews' link", "default": false },
+    { "type": "text", "id": "read_all_label", "label": "Link label", "default": "Read all reviews" },
+    { "type": "url", "id": "read_all_url", "label": "Link URL" },
+
+    { "type": "header", "content": "Style & Colors" },
+    { "type": "color", "id": "star_color", "label": "Star color", "default": "#FFC107" },
+    { "type": "color", "id": "star_empty_color", "label": "Empty star color", "default": "#E0E0E0" },
+    { "type": "color", "id": "text_color", "label": "Text color", "default": "#1A1A1A" },
+    { "type": "color", "id": "accent_color", "label": "Accent color", "default": "#111111" },
+    { "type": "color", "id": "bg_color", "label": "Section background", "default": "#FFFFFF" },
+    { "type": "color", "id": "card_bg", "label": "Card background", "default": "#FFFFFF" },
+    { "type": "color", "id": "card_border", "label": "Card border", "default": "#EAEAEA" },
+    {
+      "type": "select",
+      "id": "font_family",
+      "label": "Font family",
+      "options": [
+        { "value": "inherit", "label": "Theme default" },
+        { "value": "'Inter', sans-serif", "label": "Inter" },
+        { "value": "'Poppins', sans-serif", "label": "Poppins" },
+        { "value": "Georgia, serif", "label": "Georgia" }
+      ],
+      "default": "inherit"
+    }
+  ]
+}
+{% endschema %}

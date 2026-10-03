@@ -1,0 +1,372 @@
+.reviewly-photo-reviews {
+    --rpr-star-color: #ffc107;
+    --rpr-star-empty: #e0e0e0;
+    --rpr-text-color: #1a1a1a;
+    --rpr-accent-color: #111;
+    --rpr-bg-color: transparent;
+    --rpr-font-family: inherit;
+    --rpr-card-gap: 16px;
+    --rpr-columns-desktop: 3;
+    --rpr-columns-mobile: 2;
+    --rpr-aspect-ratio: 1 / 1;
+    --rpr-radius: 12px;
+
+    font-family: var(--rpr-font-family);
+    color: var(--rpr-text-color);
+    background: var(--rpr-bg-color);
+    padding: 24px 0;
+    box-sizing: border-box;
+}
+
+.reviewly-photo-reviews *,
+.reviewly-photo-reviews *::before,
+.reviewly-photo-reviews *::after {
+    box-sizing: border-box;
+}
+
+.reviewly-photo-reviews__header {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 0 16px;
+}
+
+.reviewly-photo-reviews__heading {
+    margin: 0 0 6px;
+    font-size: clamp(1.25rem, 2vw + 1rem, 1.75rem);
+    font-weight: 700;
+    color: inherit;
+}
+
+.reviewly-photo-reviews__description {
+    margin: 0;
+    opacity: 0.75;
+    font-size: 0.95rem;
+}
+
+.reviewly-photo-reviews__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--rpr-columns-mobile), minmax(0, 1fr));
+    gap: var(--rpr-card-gap);
+}
+
+@media (min-width: 750px) {
+    .reviewly-photo-reviews__grid {
+        grid-template-columns: repeat(var(--rpr-columns-desktop), minmax(0, 1fr));
+    }
+}
+
+.reviewly-photo-reviews__card {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: var(--rpr-radius);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reviewly-photo-reviews__card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+
+.reviewly-photo-reviews__media {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    background: #f6f6f6;
+    aspect-ratio: var(--rpr-aspect-ratio);
+}
+
+.reviewly-photo-reviews__media[data-count="2"],
+.reviewly-photo-reviews__media[data-count="3"],
+.reviewly-photo-reviews__media[data-count="4"] {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+}
+
+.reviewly-photo-reviews__media[data-count="3"]> :first-child {
+    grid-row: span 2;
+}
+
+.reviewly-photo-reviews__media-item {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.reviewly-photo-reviews__media-item img,
+.reviewly-photo-reviews__media-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.reviewly-photo-reviews__media-item:focus-visible {
+    outline: 2px solid var(--rpr-accent-color);
+    outline-offset: -2px;
+}
+
+.reviewly-photo-reviews__play {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.reviewly-photo-reviews__play::before {
+    content: "";
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.reviewly-photo-reviews__play::after {
+    content: "";
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 12px solid #fff;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    margin-left: 4px;
+}
+
+.reviewly-photo-reviews__more {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.55);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.reviewly-photo-reviews__body {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.reviewly-photo-reviews__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.reviewly-photo-reviews__author {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.reviewly-photo-reviews__date {
+    margin-left: auto;
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+.reviewly-photo-reviews__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #eaf7ee;
+    color: #1b7a3e;
+}
+
+.reviewly-photo-reviews__title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.reviewly-photo-reviews__text {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    opacity: 0.85;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.reviewly-photo-reviews__product {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: inherit;
+    text-decoration: none;
+    opacity: 0.75;
+    margin-top: 2px;
+}
+
+.reviewly-photo-reviews__product:hover {
+    opacity: 1;
+    text-decoration: underline;
+}
+
+.reviewly-photo-reviews__stars {
+    display: inline-flex;
+    gap: 2px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.reviewly-photo-reviews__star {
+    color: var(--rpr-star-empty);
+}
+
+.reviewly-photo-reviews__star--full {
+    color: var(--rpr-star-color);
+}
+
+.reviewly-photo-reviews__star--half {
+    position: relative;
+    color: var(--rpr-star-empty);
+}
+
+.reviewly-photo-reviews__star--half span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--rpr-star-color);
+}
+
+.reviewly-photo-reviews__status {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 32px 16px;
+    opacity: 0.65;
+    font-size: 0.95rem;
+}
+
+.reviewly-photo-reviews__footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.reviewly-photo-reviews__view-all {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: var(--rpr-radius);
+    background: var(--rpr-accent-color);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.reviewly-photo-reviews__lightbox[hidden] {
+    display: none;
+}
+
+.reviewly-photo-reviews__lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reviewly-photo-reviews__lightbox-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.reviewly-photo-reviews__lightbox-body {
+    position: relative;
+    max-width: min(90vw, 1100px);
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reviewly-photo-reviews__lightbox-stage {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reviewly-photo-reviews__lightbox-stage img,
+.reviewly-photo-reviews__lightbox-stage video {
+    max-width: 90vw;
+    max-height: 90vh;
+    border-radius: 8px;
+    display: block;
+}
+
+.reviewly-photo-reviews__lightbox-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: transparent;
+    border: 0;
+    color: #fff;
+    font-size: 32px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+.reviewly-photo-reviews__lightbox-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.9);
+    border: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reviewly-photo-reviews__lightbox-nav--prev {
+    left: -56px;
+}
+
+.reviewly-photo-reviews__lightbox-nav--next {
+    right: -56px;
+}
+
+@media (max-width: 749px) {
+    .reviewly-photo-reviews__lightbox-nav--prev {
+        left: 4px;
+    }
+
+    .reviewly-photo-reviews__lightbox-nav--next {
+        right: 4px;
+    }
+}
+
+body.rpr-lightbox-open {
+    overflow: hidden;
+}

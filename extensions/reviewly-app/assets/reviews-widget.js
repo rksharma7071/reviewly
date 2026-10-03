@@ -3,7 +3,6 @@
 
     const DEFAULT_APP_URL = '/apps/reviewly';
 
-    /* ---------------- helpers ---------------- */
     function apiUrl(appUrl, path, params) {
         const base = (appUrl || DEFAULT_APP_URL).replace(/\/$/, '');
         const u = new URL(base + path, window.location.origin);
@@ -52,7 +51,6 @@
         return html + '</div>';
     };
 
-    /* ---------------- API ---------------- */
     async function fetchReviews({ appUrl, shop, productId, page, perPage, sort }) {
         const res = await fetch(
             apiUrl(appUrl, '/api/reviews', { shop, productId, page, perPage, sort }),
@@ -97,7 +95,6 @@
         };
     }
 
-    /* ---------------- rendering ---------------- */
     function renderReview(r, showVerified) {
         const media = Array.isArray(r.media) ? r.media : [];
         const mediaHtml = media.length
@@ -185,7 +182,6 @@
         container.appendChild(makeBtn('›', page + 1, { disabled: page >= totalPages }));
     }
 
-    /* ---------------- write-a-review form ---------------- */
     function openWriteForm(root, ctx) {
         if (root.querySelector('.rw-form')) return;
 
@@ -205,8 +201,8 @@
             'style="position:absolute;left:-9999px;opacity:0;height:0;width:0">' +
             '<div class="rw-form__msg" data-rw-msg role="status"></div>' +
             '<div class="rw-form__actions">' +
-            '<button type="submit" class="rw-write-btn">Submit review</button>' +
-            '<button type="button" class="rw-form__cancel" data-rw-cancel>Cancel</button>' +
+            '<button type="submit" class="button button--primary">Submit review</button>' +
+            '<button type="button" class="button button--secondary" data-rw-cancel>Cancel</button>' +
             '</div>';
 
         let rating = 0;
@@ -274,7 +270,6 @@
         form.querySelector('input[name="authorName"]').focus();
     }
 
-    /* ---------------- widget init ---------------- */
     async function initWidget(root) {
         if (root.dataset.rwInit === '1') return;
         root.dataset.rwInit = '1';

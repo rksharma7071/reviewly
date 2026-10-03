@@ -13,7 +13,21 @@ export default async function handleRequest(
   responseHeaders,
   reactRouterContext,
 ) {
+
   addDocumentResponseHeaders(request, responseHeaders);
+  
+  // Patch Content-Security-Policy to allow Crisp Chat
+  let csp = responseHeaders.get("Content-Security-Policy");
+  if (csp) {
+    csp = csp.replace("script-src ", "script-src https://client.crisp.chat ");
+    csp = csp.replace("connect-src ", "connect-src https://client.crisp.chat wss://client.crisp.chat ");
+    csp = csp.replace("style-src ", "style-src https://client.crisp.chat ");
+    csp = csp.replace("font-src ", "font-src https://client.crisp.chat ");
+    csp = csp.replace("img-src ", "img-src https://image.crisp.chat https://client.crisp.chat ");
+    csp = csp.replace("frame-src ", "frame-src https://game.crisp.chat ");
+    responseHeaders.set("Content-Security-Policy", csp);
+  }
+
   const userAgent = request.headers.get("user-agent");
   const callbackName = isbot(userAgent ?? "") ? "onAllReady" : "onShellReady";
 

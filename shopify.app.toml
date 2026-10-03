@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "379b316947621ea4011e0ebfada7b164"
-name = "reviewly"
+name = "Reviewly"
 application_url = "https://your-real-tunnel-or-host"
 embedded = true
 

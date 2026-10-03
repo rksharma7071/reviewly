@@ -99,9 +99,11 @@ export const action = async ({ request }) => {
         patch.status = "PUBLISHED";
         if (!existing.publishedAt) patch.publishedAt = new Date();
         break;
-      case "hide":
-        patch.status = "HIDDEN";
-        patch.publishedAt = null;
+      case "unpublish":
+        patch.status = "UNPUBLISHED";
+        break;
+      case "reject":
+        patch.status = "REJECTED";
         break;
       case "feature":
         patch.status = "FEATURED";
@@ -123,7 +125,7 @@ export const action = async ({ request }) => {
 
     const updated = await db.review.update({ where: { id }, data: patch });
 
-    if (["approve", "hide", "feature", "unfeature"].includes(reviewAction)) {
+    if (["approve", "unpublish", "reject", "feature", "unfeature"].includes(reviewAction)) {
       await recomputeProductRatings(existing.productRefId, shop);
     }
 

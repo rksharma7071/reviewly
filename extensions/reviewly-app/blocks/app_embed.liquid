@@ -3,7 +3,12 @@
 </script>
 
 <script src="{{ 'reviews-widget.js' | asset_url }}" defer></script>
+<script src="{{ 'photo-reviews.js' | asset_url }}" defer></script>
+<script src="{{ 'review-carousel.js' | asset_url }}" defer></script>
+
 {{ 'reviews-widget.css' | asset_url | stylesheet_tag }}
+{{ 'photo-reviews.css' | asset_url | stylesheet_tag }}
+{{ 'review-carousel.css' | asset_url | stylesheet_tag }}
 
 {% schema %}
 {

@@ -13,16 +13,24 @@ export const loader = async ({ request }) => {
   const sort = url.searchParams.get("sort") || "recent";
   const page = Math.max(1, Number(url.searchParams.get("page") ?? "1"));
   const perPage = Math.min(50, Math.max(1, Number(url.searchParams.get("perPage") ?? "5")));
+  const hasMedia = url.searchParams.get("hasMedia") === "true";
 
-  if (!shop || !productId) {
-    return data({ error: "shop and productId are required" }, { status: 400 });
+  if (!shop) {
+    return data({ error: "shop is required" }, { status: 400 });
   }
 
   const where = {
     shop,
-    productId: String(productId),
     status: { in: ["PUBLISHED", "FEATURED"] },
   };
+
+  if (productId) {
+    where.productId = String(productId);
+  }
+
+  if (hasMedia) {
+    where.media = { not: null };
+  }
 
   let orderBy = { createdAt: "desc" };
   if (sort === "highest") orderBy = { rating: "desc" };

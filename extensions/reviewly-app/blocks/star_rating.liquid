@@ -1,8 +1,3 @@
-{%- comment -%}
-  extensions/reviews-widget/blocks/star_rating.liquid
-  Compact inline star rating badge (no full review list).
-{%- endcomment -%}
-
 {%- liquid
   assign shop_metafields = shop.metafields.reviews_app
   assign star_color = block.settings.star_color | default: shop_metafields.star_color.value | default: '#FFC107'
@@ -29,6 +24,50 @@
   </div>
   <a class="rw-inline-rating__link" href="#reviews-widget-{{ block.id }}" data-rw-inline-count> (0 reviews) </a>
 </div>
+
+<style data-reviewly-config>
+  .reviewly-scope-star_rating {
+    --rw-scope-ready: 1;
+  }
+</style>
+
+<script>
+  (function () {
+    var inlines = document.querySelectorAll('.rw-inline-rating');
+    if (!inlines.length) return;
+    var root = inlines[inlines.length - 1]; // Target most recent if multiple
+    root.classList.add('reviewly-scope-star_rating');
+
+    var shop = root.dataset.shop;
+    var url = '/apps/reviewly/api/widget-config?shop=' + encodeURIComponent(shop) + '&widget=star_rating';
+
+    fetch(url, { headers: { Accept: 'application/json' } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (cfg) {
+        if (!cfg) return;
+        if (!cfg.enabled) {
+          inlines.forEach(function(el) { el.style.display = 'none'; });
+          return;
+        }
+
+        var s = cfg.settings || {};
+        inlines.forEach(function(el) {
+          if (s.starColor) el.style.setProperty('--rw-star-color', s.starColor);
+          if (s.starEmptyColor) el.style.setProperty('--rw-star-empty', s.starEmptyColor);
+          if (s.textColor) el.style.setProperty('--rw-text-color', s.textColor);
+          if (s.fontFamily) el.style.setProperty('--rw-font-family', s.fontFamily);
+        });
+
+        if (cfg.css) {
+          var style = document.createElement('style');
+          style.setAttribute('data-reviewly-custom', '');
+          style.textContent = cfg.css;
+          document.head.appendChild(style);
+        }
+      })
+      .catch(function (err) { console.warn('[reviewly] config load failed', err); });
+  })();
+</script>
 
 {% schema %}
 {

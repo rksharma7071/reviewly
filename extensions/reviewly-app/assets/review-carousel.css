@@ -1,0 +1,288 @@
+.reviewly-review-carousel {
+    --rrc-star-color: #ffc107;
+    --rrc-star-empty: #e0e0e0;
+    --rrc-text-color: #1a1a1a;
+    --rrc-accent-color: #111;
+    --rrc-bg-color: transparent;
+    --rrc-card-bg: #fff;
+    --rrc-card-border: #eaeaea;
+    --rrc-font-family: inherit;
+    --rrc-gap: 16px;
+    --rrc-radius: 12px;
+    --rrc-per-view: 1;
+
+    font-family: var(--rrc-font-family);
+    color: var(--rrc-text-color);
+    background: var(--rrc-bg-color);
+    padding: 24px 0;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.reviewly-review-carousel *,
+.reviewly-review-carousel *::before,
+.reviewly-review-carousel *::after {
+    box-sizing: border-box;
+}
+
+.reviewly-review-carousel__header {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 0 16px;
+}
+
+.reviewly-review-carousel__heading {
+    margin: 0 0 6px;
+    font-size: clamp(1.25rem, 2vw + 1rem, 1.75rem);
+    font-weight: 700;
+    color: inherit;
+}
+
+.reviewly-review-carousel__description {
+    margin: 0;
+    opacity: 0.75;
+    font-size: 0.95rem;
+}
+
+.reviewly-review-carousel__viewport {
+    position: relative;
+    overflow: hidden;
+    padding: 0 4px;
+}
+
+.reviewly-review-carousel__viewport:focus-visible {
+    outline: 2px solid var(--rrc-accent-color);
+    outline-offset: 4px;
+}
+
+.reviewly-review-carousel__track {
+    display: flex;
+    gap: var(--rrc-gap);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: transform;
+}
+
+.reviewly-review-carousel__track.is-dragging {
+    transition: none;
+    cursor: grabbing;
+}
+
+.reviewly-review-carousel__track>li {
+    flex: 0 0 calc((100% - (var(--rrc-per-view) - 1) * var(--rrc-gap)) / var(--rrc-per-view));
+    min-width: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reviewly-review-carousel__track {
+        transition: none;
+    }
+}
+
+.reviewly-review-carousel__card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    height: 100%;
+    background: var(--rrc-card-bg);
+    border: 1px solid var(--rrc-card-border);
+    border-radius: var(--rrc-radius);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.reviewly-review-carousel__head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.reviewly-review-carousel__author {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.reviewly-review-carousel__date {
+    margin-left: auto;
+    font-size: 0.75rem;
+    opacity: 0.6;
+}
+
+.reviewly-review-carousel__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #eaf7ee;
+    color: #1b7a3e;
+}
+
+.reviewly-review-carousel__title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.reviewly-review-carousel__text {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    opacity: 0.9;
+    flex: 1;
+}
+
+.reviewly-review-carousel__product {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--rrc-card-border);
+    text-decoration: none;
+    color: inherit;
+    margin-top: auto;
+}
+
+.reviewly-review-carousel__product:hover .reviewly-review-carousel__product-title {
+    text-decoration: underline;
+}
+
+.reviewly-review-carousel__product-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex: 0 0 40px;
+    background: #f6f6f6;
+}
+
+.reviewly-review-carousel__product-title {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    line-height: 1.3;
+}
+
+.reviewly-review-carousel__stars {
+    display: inline-flex;
+    gap: 2px;
+    font-size: 14px;
+    line-height: 1;
+}
+
+.reviewly-review-carousel__star {
+    color: var(--rrc-star-empty);
+}
+
+.reviewly-review-carousel__star--full {
+    color: var(--rrc-star-color);
+}
+
+.reviewly-review-carousel__star--half {
+    position: relative;
+    color: var(--rrc-star-empty);
+}
+
+.reviewly-review-carousel__star--half>span {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--rrc-star-color);
+}
+
+.reviewly-review-carousel__arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1px solid var(--rrc-card-border);
+    background: var(--rrc-card-bg);
+    color: var(--rrc-text-color);
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    transition: opacity 0.2s ease;
+}
+
+.reviewly-review-carousel__arrow--prev {
+    left: 8px;
+}
+
+.reviewly-review-carousel__arrow--next {
+    right: 8px;
+}
+
+.reviewly-review-carousel__arrow[disabled] {
+    opacity: 0.35;
+    cursor: default;
+    pointer-events: none;
+}
+
+.reviewly-review-carousel__arrow:focus-visible {
+    outline: 2px solid var(--rrc-accent-color);
+    outline-offset: 2px;
+}
+
+.reviewly-review-carousel__dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.reviewly-review-carousel__dot {
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border-radius: 999px;
+    border: 0;
+    background: var(--rrc-star-empty);
+    cursor: pointer;
+    transition: width 0.2s ease, background 0.2s ease;
+}
+
+.reviewly-review-carousel__dot[aria-selected="true"] {
+    width: 24px;
+    background: var(--rrc-accent-color);
+}
+
+.reviewly-review-carousel__dot:focus-visible {
+    outline: 2px solid var(--rrc-accent-color);
+    outline-offset: 2px;
+}
+
+.reviewly-review-carousel__footer {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.reviewly-review-carousel__read-all {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: var(--rrc-radius);
+    background: var(--rrc-accent-color);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.reviewly-review-carousel__status {
+    flex: 0 0 100% !important;
+    text-align: center;
+    padding: 32px 16px;
+    opacity: 0.65;
+    font-size: 0.95rem;
+    list-style: none;
+}
